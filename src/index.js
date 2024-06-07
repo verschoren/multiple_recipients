@@ -22,11 +22,11 @@ var worker_default = {
       console.log(`Comparing original ${ticket.recipient} and new ${recipient}`);
       if (ticket.recipient == recipient) {
         console.log(`Skipped. Existing ticket for ${recipient}`);
-      } else if (support_emails.includes(recipient)) {
+      } else if (!support_emails.includes(recipient)) {
+        console.log(`Skipped. ${recipient} is not a support email.`);
+      } else {
         var new_ticket = await createTicket(ticket, recipient, ticket_id, subdomain, headers);
         console.log(`created ticket ${new_ticket} for ${recipient}`);
-      } else {
-        console.log(`Skipped. ${recipient} is not a support email.`);
       }
     }
     return new Response(`Created tickets`);
@@ -39,12 +39,12 @@ async function getSupportAddress(subdomain, headers) {
   };
   const result = await fetch("https://" + subdomain + ".zendesk.com/api/v2/recipient_addresses", init);
   let json = await result.json();
-  var adres_array = [];
+  var support_emails = [];
   for (const element of json.recipient_addresses) {
-    adres_array.push(element.email);
+    support_emails.push(element.email);
   }
-  console.log("addresses", adres_array);
-  return adres_array;
+  console.log("addresses", support_emails);
+  return support_emails;
 }
 async function getTicket(ticket_id, subdomain, headers) {
   const init = {
